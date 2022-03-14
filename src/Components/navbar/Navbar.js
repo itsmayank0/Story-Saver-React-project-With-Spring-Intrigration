@@ -3,20 +3,20 @@ import React from "react";
 // import AnimationSharpIcon from '@mui/icons-material/AnimationSharp';
 // import { IconButton } from '@material-ui/core';
 // import SearchIcon from '@mui/icons-material/Search';
-import { useUser } from "../../context/userContext";
+// import { useUser } from "../../context/userContext";
 import { NavLink } from 'react-router-dom';
 import "./Navbar.css";
 
-function NavBarConditions({data})
+function NavBarConditions()
 {   
     const [click, setClick] = React.useState(false);
 
-    const handleClick = () => setClick(!click);
-    const Close = () => setClick(false);
+  const handleClick = () => setClick(!click);
+  const Close = () => setClick(false);
 
     
-    if (data.userLoggedIn) {
-        console.log("I am Logged in")
+    if (localStorage.getItem('token') !== "undefined" && localStorage.getItem('token') !== undefined){ 
+        // console.log("I am Logged in")
         return (
             <div>
             <div className={click ? "main-container" : ""} onClick={()=>Close()} />
@@ -53,7 +53,6 @@ function NavBarConditions({data})
                     
             <li className="nav-item">
               <a
-                
                 href="/logout"
                 activeClassName="active"
                 className="nav-links"
@@ -72,7 +71,7 @@ function NavBarConditions({data})
         )
     }
     else {
-        console.log("I am not logged in")
+        // console.log("I am not logged in")
         return (
             <div>
             <div className={click ? "main-container" : ""} onClick={()=>Close()} />
@@ -119,7 +118,7 @@ function NavBarConditions({data})
 
 
 function Navbar() {
-    const { state } = useUser();
+    // const { state } = useUser();
     
     return (
     // <nav className="navbar navbar-expand-lg navbar-dark bg-dark bg-gradient">
@@ -195,7 +194,7 @@ function Navbar() {
     // </nav>
     //   <div>
           
-        <NavBarConditions data={state}></NavBarConditions>
+        <NavBarConditions ></NavBarConditions>
      
   );
 }

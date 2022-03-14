@@ -1,23 +1,25 @@
 import { useState } from "react";
-import axios from "axios";
-import { v4 as uuid } from "uuid";
+// import axios from "axios";
+// import { v4 as uuid } from "uuid";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
+// import FormControlLabel from '@mui/material/FormControlLabel';
+// import Checkbox from '@mui/material/Checkbox';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import AddReactionIcon from '@mui/icons-material/AddReaction';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import {toast} from 'react-toastify';
+import { toast } from 'react-toastify';
+import { Zoom } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Config from "../../Config.json";
+import { makeStyles } from "@material-ui/core/styles";
 
 
 const theme = createTheme({
@@ -31,31 +33,48 @@ const theme = createTheme({
   },
 });
 
+const useStyles = makeStyles({
+  root: {
+    "& .MuiInputLabel-root": {
+      color: "white"
+    },
+    "& .MuiInputBase-input ": {
+      color: "white"
+    }
+  }
+});
+
 export default function Register() {
+  const classes = useStyles();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [error, setError] = useState("");
+  // const [name, setName] = useState("");
+  // const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  toast.configure();
+
   async function handleButton() {
-    const { data } = await axios.get("http://localhost:3002/user");
-    const matching = data.find((el) => el.username === username);
-    if (matching) {
-      setError("username already exists");
-      setTimeout(() => setError(""), 4000);
-    } else {
-      const response = await axios.post("http://localhost:3002/user", {
-        id: uuid(),
-        name,
-        username,
-        password,
-      });
-      if (response.status === 201) {
-        console.log("user created");
-        navigate("/login");
-      }
-    }
+
+  fetch(Config.AUTH_SERVER_URL+"register",{
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ "mail":username, "password":password})
+
+  })
+  .then(e=>e.json())
+    .then(e => {
+      toast.success('User Registered Successfully', {
+        transition: Zoom //Zoom, Flip, Bounce
+      })
+      navigate("/login");
+    })
+  .catch(e=>( toast.error('User already Exists please provide unique email',{
+    transition: Zoom //Zoom, Flip, Bounce
+    })));
+
   }
 
   return (
@@ -75,44 +94,36 @@ export default function Register() {
         <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
           <AddReactionIcon />
         </Avatar>
-        <Typography component="h1" variant="h5">
+        <Typography component="h1" variant="h5" style={{color: "white"}}>
           Register to save your Memories
         </Typography>
           <Box component="form" Validate sx={{ mt: 1 }}>
-            <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="email"
-            label="Your Name"
-            name="name"
-              autoComplete="email"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoFocus
-          />
           <TextField
             margin="normal"
             required
             fullWidth
             id="email"
-            label="User Name"
-            name="email"
+            label="User Email"
+                name="email"
+                className={classes.root}
               autoComplete="email"
               value={username}
              onChange={(e) => setUsername(e.target.value)}
-              autoFocus
+                autoFocus
+                variant="filled"
           />
           <TextField
             margin="normal"
             required
-            fullWidth
+                fullWidth
+                className={classes.root}
             name="password"
               label="Password"
               value={password}
              onChange={(e) => setPassword(e.target.value)}
             type="password"
-            id="password"
+                id="password"
+                variant="filled"
             autoComplete="current-password"
               />
             <TextField
@@ -121,8 +132,8 @@ export default function Register() {
             fullWidth
             name="confirmPassword"
               label="Confirm Password"
-              
-              
+              variant="filled"
+              className={classes.root}
             type="password"
             id="password"
             autoComplete="current-password"
@@ -145,9 +156,6 @@ export default function Register() {
           </Grid>
         </Box>
       </Box>
-      <div id="alert alert-danger" className="mb-4" style={{color: "red"}}>
-                            {error}
-      </div>
     </Container>
       </ThemeProvider>
     </div>

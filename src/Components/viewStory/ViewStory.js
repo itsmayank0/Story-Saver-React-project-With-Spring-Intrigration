@@ -1,34 +1,42 @@
-import axios from "axios";
-import { useEffect } from "react";
-import { useUser } from "../../context/userContext";
+// import axios from "axios";
+import { useEffect, useState } from "react";
+// import { useUser } from "../../context/userContext";
 import Card from "../card/Card";
 import { v4 as uuid } from "uuid";
 import Grid from '@mui/material/Grid';
 import Container from '@mui/material/Container';
 
 export default function ViewStory() {
-  const { state, dispatch } = useUser();
+  const [stor, setStor] = useState([]);
   useEffect(() => {
-    const id = state.userInfo.id;
-    axios
-      .get(`http://localhost:3002/data`)
-      .then(({ data }) => data.filter((el) => el.userId === id))
-      .then((result) => {
-        dispatch({ type: "INITIAL_DATA", payload: result });
-      });
+    var jwt = require("jsonwebtoken");
+    var result = jwt.decode(localStorage.getItem('token'));
+
+
+
+    fetch(`http://localhost:8088/api/stcontrol/stories/${result.sub}`,{
+      
+      method: 'GET',
+      headers: new Headers({
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+      }),
+  })
+  .then(e=>e.json())
+  .then(e=>{console.log("in dashboard after micro service fetch",e.length);setStor(e)})
+  .catch(e=>console.log("Exception In login after userMS",e));
   }, []);
   return (
     <div className="container">
      
       <Container sx={{ py: 8 }} >
       <Grid container spacing={4} >
-      {state.userData
+      {stor
         .sort((a, b) => new Date(b.date) - new Date(a.date))
-          .map((el) => (
-           
+            .map((el) => (
               <Card data={el} key={uuid()} />
-              
-        ))}
+            ))}
         </Grid>
         </Container>
         

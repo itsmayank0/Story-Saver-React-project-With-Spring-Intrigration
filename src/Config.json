@@ -1,0 +1,4 @@
+{
+    "AUTH_SERVER_URL": "http://localhost:9000/auth/",
+    "STORY_SERVER_URL": "http://localhost:9000/api/stcontrol/"
+}

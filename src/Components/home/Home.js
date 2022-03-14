@@ -1,11 +1,6 @@
 import ViewStory from "../viewStory/ViewStory";
-import Stack from '@mui/material/Stack';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 import Search from "../SearchBar/Search";
 
 const theme = createTheme({
@@ -23,7 +18,7 @@ export default function Home() {
   return (
     <div className="text-light">
       <ThemeProvider theme={theme}>
-      <Box
+      {/* <Box
           sx={{
             backgroundColor: '#D9D55B',
             pt: 8,
@@ -52,10 +47,10 @@ export default function Home() {
               justifyContent="center"
             >
               <Button variant="outlined" style={{padding:"18px 15px 18px 15px", backgroundColor:"#35BDD0", borderRadius: "10px"}}><Link to="/create-new-story" style={{ textDecoration: "none", color: "#0d0d0d" }}>Add your Memory Now</Link></Button>
-              {/* <Button variant="outlined"><Link to="/" style={{ textDecoration: "none", color: "#35BDD0" }}  >Go to Dashboard Now</Link></Button> */}
+              {/* <Button variant="outlined"><Link to="/" style={{ textDecoration: "none", color: "#35BDD0" }}  >Go to Dashboard Now</Link></Button> 
             </Stack>
           </Container>
-        </Box>
+        </Box> */}
         <div className="container">
           <div className="row pt-3"><Search/></div>
         </div>

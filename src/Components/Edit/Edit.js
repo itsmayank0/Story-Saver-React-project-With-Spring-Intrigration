@@ -1,42 +1,59 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {useParams } from 'react-router-dom';
-import { useUser } from "../../context/userContext";
+// import { useUser } from "../../context/userContext";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import "./Edit.css"
+import "./Edit.css";
+import {toast} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import {Zoom } from 'react-toastify';
 
 function Edit() {
+    toast.configure();
     let {userid,id} = useParams();
     console.log("in EDIT userid & pid",userid, id);
-    const [userIdAfterFetch, setUserIdAfterFetch] = useState("");
+    // const [userIdAfterFetch, setUserIdAfterFetch] = useState("");
     const [caption, setCaption] = useState("");
     const [images, setImages] = useState([]);
     const [color, setColor] = useState("#FFFFFF");
     const [error, setError] = useState("");
-    const { state, dispatch } = useUser();
+    const [previewimages, setPreviewimages] = useState([]);
+    // const { state, dispatch } = useUser();
     const fileRef = useRef();
     const navigate = useNavigate();
 
+    var jwt = require("jsonwebtoken");
+    var result = jwt.decode(localStorage.getItem('token'));
     
     useEffect(() => {
-        fetch(`http://localhost:3002/data/${id}`)
-            .then(res => res.json()).then((data) => {
-                console.log(data)
-                console.log(data.userId);
-                setUserIdAfterFetch(data.userId);
-                setCaption(data.caption);
-                setColor(data.color);
-                setFilesAfterReading(data.images);
-                console.log(images)
-                console.log(JSON.stringify({ "userId": userIdAfterFetch, "color": color, "caption": caption, "date": "2021-12-09","images": images}))
-        })
-       
+        // fetch(`http://localhost:3002/data/${id}`)
+        //     .then(res => res.json()).then((data) => {
+        //         console.log(data)
+        //         console.log(data.userId);
+        //         setUserIdAfterFetch(data.userId);
+        //         setCaption(data.caption);
+        //         setColor(data.color);
+        //         setFilesAfterReading(data.images);
+        //         console.log(images)
+        //         console.log(JSON.stringify({ "userId": userIdAfterFetch, "color": color, "caption": caption, "date": "2021-12-09","images": images}))
+        //     })
+        
+
+        fetch(`http://localhost:8088/api/stcontrol/story/${id}`)
+        .then(res=>res.json())
+        .then(res=>{
+            console.log("found story----",res);
+            setCaption(res.title);
+          setColor(res.color);
+          setImages(res.image);
+        })   
         
     }, [])    
     
   const convertToBase64 = (file) => {
     return new Promise((resolve, reject) => {
+      console.log(file);
       const fileReader = new FileReader(file);
+      console.log(fileReader);
       fileReader.readAsDataURL(file);
       fileReader.onload = () => {
         resolve(fileReader.result);
@@ -49,31 +66,68 @@ function Edit() {
 
   const setFiles = async (files) => {
     setImages([]);
+    setPreviewimages([]);
     for (let index = 0; index < files.length; index++) {
       const file = files[index];
       const base64 = await convertToBase64(file);
-      setImages((prev) => [...prev, base64]);
+      setPreviewimages((prev) => [...prev, base64]);
+      setImages((prev) => [...prev, file]);
     }
     return "done";
     };
     
-  const setFilesAfterReading = async (files) => {
-    setImages([]);
-    for (let index = 0; index < files.length; index++) {
-      const file = files[index];
-      setImages((prev) => [...prev, file]);
-    }
-    return "done";
-  };
+  // const setFilesAfterReading = async (files) => {
+  //   setPreviewimages([]);
+  //   for (let index = 0; index < files.length; index++) {
+  //     const file = files[index];
+  //     // console.log(file);
+  //     // const base64 = await convertToBase64AfterFetch(file);
+  //     setPreviewimages((prev) => [...prev, file]);
+  //   }
+  //   return "done";
+  // };
 
   function handleEditClick(e) {
     
-      axios.patch(`http://localhost:3002/data/${id}`, {
-          caption,
-          images,
-          color
-      }
-      )
+    console.log("edit function",images);
+
+                    
+    const formData = new FormData();
+    for(let i=0;i<images.length;i++)
+    {
+        formData.append('image', images[i]);
+
+        //formData.delete('file');
+    }
+
+
+    formData.append("sid",`${id}`);
+    formData.append("tag", caption);
+    formData.append("userId", result.sub)
+    formData.append("color",color);
+    formData.append("time", new Date().toISOString());
+    
+
+
+
+
+    fetch("http://localhost:8088/api/stcontrol/story",{
+    
+    method: 'PUT',
+   
+    body: formData
+
+}).then(e => {
+  toast.success('Story updated Successfully', {
+    transition: Zoom //Zoom, Flip, Bounce
+  })
+  navigate("/");
+  window.location.reload(false);
+}).catch(e => {
+  toast.error('Something went wrong!', {
+    transition: Zoom //Zoom, Flip, Bounce
+  })
+}) 
     // if (images.length > 4) {
     //   setError("You can only upload 4 files maximum at a time");
     //   setTimeout(() => setError(""), 3000);
@@ -86,7 +140,7 @@ function Edit() {
     //       },
     //       body: JSON.stringify({ "userId": userIdAfterFetch, "color": color, "caption": caption, "date": "2021-12-09","images": images})
     //   });
-      console.log(JSON.stringify({ userIdAfterFetch, color, caption, images}))
+      console.log(JSON.stringify({ color, caption, images}))
       console.log(id);
       console.log(caption);
       console.log(color);
@@ -191,8 +245,15 @@ return (
                                                 </div>
                                                 <div className="col-md-12">
                                                 <div className="d-flex justify-content-center">
-                              {images.map((el) => {
+                            {previewimages.map((el) => {
+                                
                                 return <img key={el} className="img-fluid w-25" src={el} alt="" />;
+                              })}
+                            {images.map((el) => {
+                              if (el.data === undefined) 
+                                return <></>
+                              else
+                                return <img key={el} className="img-fluid w-25" src={`data:image/png;base64,`+el.data} alt="" />;
                               })}
                           </div></div>
                                                 <div className="col-md-12 mt-3 text-center">
